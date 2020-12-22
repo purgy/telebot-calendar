@@ -6,20 +6,20 @@ from telebot import TeleBot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 
 MONTHS = (
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
 )
-DAYS = ("Su", "Mo", "Tu", "We", "Th", "Fr", "Sa")
+DAYS = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
 
 class CallbackData:
@@ -97,7 +97,8 @@ class CallbackData:
         prefix, *parts = callback_data.split(self.sep)
 
         if prefix != self.prefix:
-            raise ValueError("Passed callback data can't be parsed with that prefix.")
+            raise ValueError(
+                "Passed callback data can't be parsed with that prefix.")
         elif len(parts) != len(self._part_names):
             raise ValueError("Invalid parts count!")
 
@@ -123,7 +124,7 @@ class CallbackData:
 
 
 def create_calendar(
-    name: str = "calendar", year: int = None, month: int = None,
+    name: str = "calendar", year: int = None, month: int = None
 ) -> InlineKeyboardMarkup:
     """
     Create a built in inline keyboard with calendar
@@ -161,7 +162,8 @@ def create_calendar(
         row = list()
         for day in week:
             if day == 0:
-                row.append(InlineKeyboardButton(" ", callback_data=data_ignore))
+                row.append(InlineKeyboardButton(
+                    " ", callback_data=data_ignore))
             elif (
                 f"{now_day.day}.{now_day.month}.{now_day.year}"
                 == f"{day}.{month}.{year}"
@@ -169,14 +171,16 @@ def create_calendar(
                 row.append(
                     InlineKeyboardButton(
                         f"({day})",
-                        callback_data=calendar_callback.new("DAY", year, month, day),
+                        callback_data=calendar_callback.new(
+                            "DAY", year, month, day),
                     )
                 )
             else:
                 row.append(
                     InlineKeyboardButton(
                         str(day),
-                        callback_data=calendar_callback.new("DAY", year, month, day),
+                        callback_data=calendar_callback.new(
+                            "DAY", year, month, day),
                     )
                 )
         keyboard.add(*row)
@@ -186,7 +190,7 @@ def create_calendar(
             "<", callback_data=calendar_callback.new("PREVIOUS-MONTH", year, month, "!")
         ),
         InlineKeyboardButton(
-            "Cancel", callback_data=calendar_callback.new("CANCEL", year, month, "!")
+            "Отмена", callback_data=calendar_callback.new("CANCEL", year, month, "!")
         ),
         InlineKeyboardButton(
             ">", callback_data=calendar_callback.new("NEXT-MONTH", year, month, "!")
@@ -217,11 +221,13 @@ def create_months_calendar(
     for i, month in enumerate(zip(MONTHS[0::2], MONTHS[1::2])):
         keyboard.add(
             InlineKeyboardButton(
-                month[0], callback_data=calendar_callback.new("MONTH", year, i + 1, "!")
+                month[0], callback_data=calendar_callback.new(
+                    "MONTH", year, 2*i + 1, "!")
             ),
             InlineKeyboardButton(
                 month[1],
-                callback_data=calendar_callback.new("MONTH", year, (i + 1) * 2, "!"),
+                callback_data=calendar_callback.new(
+                    "MONTH", year, 2*i + 2, "!"),
             ),
         )
 
@@ -257,9 +263,6 @@ def calendar_query_handler(
         bot.answer_callback_query(callback_query_id=call.id)
         return False, None
     elif action == "DAY":
-        bot.delete_message(
-            chat_id=call.message.chat.id, message_id=call.message.message_id
-        )
         return datetime.datetime(int(year), int(month), int(day))
     elif action == "PREVIOUS-MONTH":
         preview_month = current - datetime.timedelta(days=1)
@@ -296,17 +299,18 @@ def calendar_query_handler(
             text=call.message.text,
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            reply_markup=create_calendar(name=name, year=int(year), month=int(month)),
+            reply_markup=create_calendar(
+                name=name, year=int(year), month=int(month)),
         )
         return None
     elif action == "CANCEL":
-        bot.delete_message(
-            chat_id=call.message.chat.id, message_id=call.message.message_id
-        )
+        # bot.delete_message(
+        #     chat_id=call.message.chat.id, message_id=call.message.message_id
+        # )
         return "CANCEL", None
     else:
         bot.answer_callback_query(callback_query_id=call.id, text="ERROR!")
-        bot.delete_message(
-            chat_id=call.message.chat.id, message_id=call.message.message_id
-        )
+        # bot.delete_message(
+        #     chat_id=call.message.chat.id, message_id=call.message.message_id
+        # )
         return None
